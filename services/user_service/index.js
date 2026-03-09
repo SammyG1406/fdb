@@ -1,4 +1,10 @@
 const express = require("express");
+import { producer } from './kafka';
+
+
+export async function startKafkaProducer() {
+  await producer.connect();
+}
 
 const app = express();
 app.use(express.json());
