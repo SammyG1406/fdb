@@ -1,15 +1,13 @@
-const { Kafka, logLevel } = require("kafkajs");
+import { Partitioners, Kafka, logLevel } from "kafkajs";
 
-const brokers = (process.env.KAFKA_BROKERS || "localhost:9092").split(",");
 
 export const kafka = new Kafka({
   clientId: process.env.SERVICE_NAME || "meal-service",
-  brokers,
+  brokers: ['localhost:9092'],
+  connectionTimeout: 5000, 
   loglevel: logLevel.INFO,
 });
 
 export const producer = kafka.producer({
   allowAutoTopicCreation: false,
 });
-
-module.exports = { kafka, producer };
