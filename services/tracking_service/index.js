@@ -17,7 +17,7 @@ async function startConsumer() {
 
   await consumer.subscribe({
     topic: "meal.events",
-    fromBeginning: true,
+    fromBeginning: false,
   });
 
   console.log("tracking_service subscribed to meal.events");

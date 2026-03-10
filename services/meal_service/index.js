@@ -1,3 +1,7 @@
+console.log("RUNNING FILE:", __filename);
+console.log("CWD:", process.cwd());
+console.log("STARTED NEW VERSION: EVT_22_BUILD");
+
 require("dotenv").config();
 
 const express = require("express");
@@ -26,6 +30,8 @@ app.post("/test-publish", async (req, res) => {
       fat: 20,
       loggedAt: new Date().toISOString(),
     };
+
+    console.log("Publishing event:", event); 
 
     await producer.send({
       topic: "meal.events",
