@@ -1,7 +1,7 @@
 
-import { pool } from "../db"
+import { pool } from "../db.js"
 
-async function handleMealLogged(event) {
+export async function handleMealLogged(event) {
   console.log("Handling MealLogged event");
 
   const query = `
@@ -41,5 +41,3 @@ async function handleMealLogged(event) {
 
   console.log("Event Persisted to tracking_db");
 }
-
-module.exports = { handleMealLogged };
