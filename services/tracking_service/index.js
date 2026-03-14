@@ -24,15 +24,34 @@ async function startConsumer() {
 
   console.log("tracking_service subscribed to meal.events");
 
-  await consumer.run({
-    eachMessage: async ({ topic, partition, message }) => {
-      if (!message.value) return;
+  import { handleMealLogged } from "./handlers/mealLogged.js";
+import { handleMealUpdated } from "./handlers/mealUpdated.js";
+import { handleMealDeleted } from "./handlers/mealDeleted.js";
 
-      const event = JSON.parse(message.value.toString());
-      await handleMealLogged(event);
-      console.log("tracking_service received event:");
-    },
-  });
+await consumer.run({
+  eachMessage: async ({ message }) => {
+
+    const event = JSON.parse(message.value.toString());
+
+    switch (event.type) {
+
+      case "MealLogged":
+        await handleMealLogged(event.payload);
+        break;
+
+      case "MealUpdated":
+        await handleMealUpdated(event.payload);
+        break;
+
+      case "MealDeleted":
+        await handleMealDeleted(event.payload);
+        break;
+
+      default:
+        console.log("Unknown event type:", event.type);
+    }
+  }
+});
 }
 
 async function start() {
