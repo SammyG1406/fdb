@@ -1,12 +1,34 @@
 
 services:
-  # ---------- Edge (optional later) ----------
-  # nginx:
-  #   image: nginx:alpine
-  #   ports: ["80:80"]
-  #   depends_on: [gateway]
+  # ---------- Load Balancer ----------
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - gateway
+      - frontend
+    restart: unless-stopped
+    networks:
+      - default
+      - monitoring
 
-  # ---------- Gateway ----------
+  # ---------- Frontend ----------
+  frontend:
+    build: ./frontend
+    expose:
+      - "3002"
+    env_file:
+      - ./frontend/.env
+    environment:
+      PORT: 3002
+    restart: unless-stopped
+    networks:
+      - default
+
+  # ---------- Monitoring ----------
   prometheus:
     image: prom/prometheus
     container_name: prometheus
@@ -20,6 +42,7 @@ services:
       - prom-data:/prometheus
     networks:
       - monitoring
+
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -30,27 +53,32 @@ services:
       - grafana-storage:/var/lib/grafana
     networks:
       - monitoring
+
+  # ---------- Gateway ----------
   gateway:
     build: ./gateway
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     environment:
       USER_SERVICE_URL: http://user_service:4001
       MEAL_SERVICE_URL: http://meal_service:4002
       TRACKING_SERVICE_URL: http://tracking_service:4003
-
     depends_on:
       - user_service
       - meal_service
       - tracking_service
-
+    restart: unless-stopped
+    networks:
+      - default
+      - monitoring
 
   # ---------- User Service + DB ----------
   user_service:
     build:
       context: .
       dockerfile: ./services/user_service/Dockerfile
-    ports: ["4001:4001"]
+    expose:
+      - "4001"
     env_file:
       - ./services/user_service/.env
     volumes:
@@ -59,6 +87,7 @@ services:
       DATABASE_URL: postgres://user_user:user_pass@user-db:5432/user_db
       SERVICE_NAME: user_service
     depends_on: [user-db]
+    restart: unless-stopped
     networks:
       - default
       - monitoring
@@ -70,14 +99,15 @@ services:
       POSTGRES_PASSWORD: user_pass
       POSTGRES_DB: user_db
     volumes: [user_data:/var/lib/postgresql/data]
-    ports: ["5433:5432"]  # optional host access
+    restart: unless-stopped
 
   # ---------- Meal Service + DB ----------
   meal_service:
     build:
       context: .
       dockerfile: ./services/meal_service/Dockerfile
-    ports: ["4002:4002"]
+    expose:
+      - "4002"
     env_file:
       - ./services/meal_service/.env
     environment:
@@ -86,6 +116,7 @@ services:
     depends_on: [meal-db]
     volumes:
       - ./shared/schemas:/home/shared/schemas
+    restart: unless-stopped
     networks:
       - default
       - monitoring
@@ -98,14 +129,15 @@ services:
       POSTGRES_DB: meal_db
     volumes:
       - meal_data:/var/lib/postgresql/data
-    ports: ["5434:5432"]
+    restart: unless-stopped
 
   # ---------- Tracking Service + DB ----------
   tracking_service:
     build:
       context: .
       dockerfile: ./services/tracking_service/Dockerfile
-    ports: ["4003:4003"]
+    expose:
+      - "4003"
     env_file:
       - ./services/tracking_service/.env
     volumes:
@@ -114,6 +146,7 @@ services:
       DATABASE_URL: postgres://tracking_user:tracking_pass@tracking-db:5432/tracking_db
       SERVICE_NAME: tracking_service
     depends_on: [tracking-db]
+    restart: unless-stopped
     networks:
       - default
       - monitoring
@@ -127,8 +160,8 @@ services:
     volumes:
       - tracking_data:/var/lib/postgresql/data
       - ./services/tracking_service/init.sql:/docker-entrypoint-initdb.d/init.sql
-    ports: ["5435:5432"]
-  
+    restart: unless-stopped
+
   food-db:
     image: postgres:15
     environment:
@@ -138,7 +171,7 @@ services:
     volumes:
       - food_data:/var/lib/postgresql/data
       - ./combined_foods.csv:/data/combined_foods.csv
-    ports: ["5430:5432"]
+    restart: unless-stopped
 
 volumes:
   user_data:
