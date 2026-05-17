@@ -8,10 +8,8 @@ RUN cd /home/shared && npm install
 
 WORKDIR /home/userservice1406/app
 
-COPY package*.json ./
+COPY services/user_service/package*.json ./
 RUN npm install
-
-COPY . .
 
 COPY services/user_service/ .
 COPY shared /home/shared

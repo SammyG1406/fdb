@@ -197,6 +197,7 @@ docker-compose.yml
 .pypirc
 
 *.yml
+!prometheus/prometheus.yml
 # Cursor
 #  Cursor is an AI-powered code editor. `.cursorignore` specifies files/directories to
 #  exclude from AI features like autocomplete and code analysis. Recommended for sensitive data
