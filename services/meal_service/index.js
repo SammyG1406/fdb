@@ -2,14 +2,10 @@ import "dotenv/config";
 import express from "express";
 import { randomUUID } from "crypto";
 
-import { producer } from "./src/kafka.js";
 import { mealLoggedEventSchema } from "../../shared/schemas/mealLogged.Schema.js";
 import { mealUpdatedEventSchema } from "../../shared/schemas/mealUpdated.Schema.js";
 import { mealDeletedEventSchema } from "../../shared/schemas/mealDeleted.Schema.js";
 import router from "./metrics/index.js";
-
-console.log("STARTED NEW VERSION: EVT_29_BUILD");
-console.log("CWD:", process.cwd());
 
 const app = express();
 app.use(express.json());
@@ -23,142 +19,6 @@ app.get("/health", (req, res) => {
 });
 
 app.use(router);
-
-/**
- * Helper to publish validated events
- */
-async function publishEvent(topic, event) {
-  await producer.send({
-    topic,
-    messages: [
-      {
-        key: event.payload.userId,
-        value: JSON.stringify(event),
-      },
-    ],
-  });
-}
-
-app.post("/test-publish/logged", async (req, res) => {
-  try {
-    const now = new Date().toISOString();
-
-    const rawEvent = {
-      eventId: randomUUID(),
-      eventType: "MealLogged",
-      version: 1,
-      occurredAt: now,
-      source: "meal_service",
-      payload: {
-        mealId: randomUUID(),
-        userId: randomUUID(),
-        mealType: "lunch",
-        mealDate: now.slice(0, 10),
-        totalCalories: 850,
-        totalProtein: 50,
-        totalCarbs: 55,
-        totalFats: 20,
-      },
-    };
-
-    const event = mealLoggedEventSchema.parse(rawEvent);
-
-    console.log("ABOUT TO PUBLISH MealLogged EVENT:");
-    console.log(event);
-
-    await publishEvent("meal.events", event);
-
-    res.json({
-      success: true,
-      event,
-    });
-  } catch (error) {
-    console.error("MealLogged publish failed:", error);
-    res.status(500).json({
-      success: false,
-      error: error.message || "MealLogged publish failed",
-    });
-  }
-});
-
-app.post("/test-publish/updated", async (req, res) => {
-  try {
-    const now = new Date().toISOString();
-
-    const rawEvent = {
-      eventId: randomUUID(),
-      eventType: "MealUpdated",
-      version: 1,
-      occurredAt: now,
-      source: "meal_service",
-      payload: {
-        mealId: randomUUID(),
-        userId: randomUUID(),
-        mealType: "dinner",
-        mealDate: now.slice(0, 10),
-        totalCalories: 900,
-        totalProtein: 55,
-        totalCarbs: 60,
-        totalFats: 22,
-      },
-    };
-
-    const event = mealUpdatedEventSchema.parse(rawEvent);
-
-    console.log("ABOUT TO PUBLISH MealUpdated EVENT:");
-    console.log(event);
-
-    await publishEvent("meal.events", event);
-
-    res.json({
-      success: true,
-      event,
-    });
-  } catch (error) {
-    console.error("MealUpdated publish failed:", error);
-    res.status(500).json({
-      success: false,
-      error: error.message || "MealUpdated publish failed",
-    });
-  }
-});
-
-app.post("/test-publish/deleted", async (req, res) => {
-  try {
-    const now = new Date().toISOString();
-
-    const rawEvent = {
-      eventId: randomUUID(),
-      eventType: "MealDeleted",
-      version: 1,
-      occurredAt: now,
-      source: "meal_service",
-      payload: {
-        mealId: randomUUID(),
-        userId: randomUUID(),
-        deletedAt: now,
-      },
-    };
-
-    const event = mealDeletedEventSchema.parse(rawEvent);
-
-    console.log("ABOUT TO PUBLISH MealDeleted EVENT:");
-    console.log(event);
-
-    await publishEvent("meal.events", event);
-
-    res.json({
-      success: true,
-      event,
-    });
-  } catch (error) {
-    console.error("MealDeleted publish failed:", error);
-    res.status(500).json({
-      success: false,
-      error: error.message || "MealDeleted publish failed",
-    });
-  }
-});
 
 app.post("/meals/log", async (req, res) => {
   try {
@@ -184,8 +44,6 @@ app.post("/meals/log", async (req, res) => {
     };
 
     const event = mealLoggedEventSchema.parse(rawEvent);
-    await publishEvent("meal.events", event);
-
     res.json({ success: true, event });
   } catch (error) {
     console.error("Meal log failed:", error);
@@ -193,18 +51,6 @@ app.post("/meals/log", async (req, res) => {
   }
 });
 
-async function start() {
-  try {
-    await producer.connect();
-    console.log("Kafka Producer connected for meal_service");
-
-    app.listen(4002, "0.0.0.0", () => {
-      console.log("meal_service running on port 4002");
-    });
-  } catch (error) {
-    console.error("Failed to start meal_service:", error);
-    process.exit(1);
-  }
-}
-
-start();
+app.listen(4002, "0.0.0.0", () => {
+  console.log("meal_service running on port 4002");
+});

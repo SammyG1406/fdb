@@ -1,5 +1,5 @@
 import express from "express";
-import { producer } from './src/kafka.js';
+// import { producer } from './src/kafka.js';
 import router from "./metrics/index.js";
 import handleUserUpdated from "./src/handlers/userAttributesUpdated.js"
 
@@ -8,7 +8,7 @@ const app = express();
 app.use(express.json());
 app.use(router);
 
-await producer.connect();
+// await producer.connect();
 
 app.get("/", (req, res) => {
   res.json({ service: "user_service running" });
