@@ -64,7 +64,7 @@ export default function Sidebar() {
             </svg>
           </div>
           <div>
-            <h1 className="text-base font-bold text-slate-900 leading-tight">Sully</h1>
+            <h1 className="text-base font-bold text-slate-900 leading-tight">Calepo</h1>
             <p className="text-[10px] text-slate-400 leading-tight">Nutrition Tracker</p>
           </div>
         </div>

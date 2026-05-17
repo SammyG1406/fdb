@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FitDB – Nutrition Tracker",
+  title: "Calepo",
   description: "Track your meals and hit your fitness goals",
 };
 

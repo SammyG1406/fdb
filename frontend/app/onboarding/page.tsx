@@ -99,7 +99,7 @@ export default function OnboardingPage() {
       {/* Brand */}
       <div className="mb-8 text-center">
         <div className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2">
-          <span className="text-sm font-bold text-white">FitDB</span>
+          <span className="text-sm font-bold text-white">Calepo</span>
         </div>
         <p className="mt-2 text-xs text-slate-400">Nutrition Tracker</p>
       </div>

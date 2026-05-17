@@ -181,7 +181,7 @@ export default function AccountPage() {
               )}
             </div>
 
-            <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            {/* <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
               <h2 className="mb-3 text-lg font-semibold text-slate-900">Account Stats</h2>
               <div className="grid grid-cols-2 gap-4">
                 <div className="rounded-2xl bg-slate-50 p-4 text-center">
@@ -201,7 +201,7 @@ export default function AccountPage() {
                   <p className="mt-1 text-2xl font-bold text-slate-900">{accountStats.streakDays} days</p>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
 
           <div className="lg:col-span-2 space-y-6">

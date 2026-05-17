@@ -12,7 +12,7 @@ export default function SignUpPage() {
               <path d="M2 12l10 5 10-5" />
             </svg>
           </div>
-          <span className="text-xl font-bold text-slate-900">FitDB</span>
+          <span className="text-xl font-bold text-slate-900">Calepo</span>
         </div>
         <SignUp />
       </div>
