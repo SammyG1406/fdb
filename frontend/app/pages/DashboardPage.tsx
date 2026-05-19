@@ -28,7 +28,22 @@ type TrackedMeal = {
   items: MealItem[];
 };
 
-const CALORIE_GOAL = 2400;
+type UserGoals = {
+  calorie_goal: number;
+  protein_goal: number;
+  carbs_goal: number;
+  fat_goal: number;
+  fibre_goal: number;
+};
+
+const DEFAULT_GOALS: UserGoals = {
+  calorie_goal: 2000,
+  protein_goal: 150,
+  carbs_goal:   200,
+  fat_goal:     67,
+  fibre_goal:   30,
+};
+
 const MEAL_TYPES = ['Breakfast', 'Lunch', 'Snack', 'Dinner'];
 
 const reminders = [
@@ -41,47 +56,59 @@ function formatTime(loggedAt: string) {
   return new Date(loggedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
+function MacroBar({ label, current, goal, unit = 'g' }: { label: string; current: number; goal: number; unit?: string }) {
+  const pct = Math.min((current / (goal || 1)) * 100, 100);
+  return (
+    <div className="rounded-2xl bg-slate-50 p-4">
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-xs text-slate-500">{label}</p>
+        <p className="text-xs text-slate-400">{Math.round(current)}/{Math.round(goal)}{unit}</p>
+      </div>
+      <p className="text-xl font-bold text-slate-900 mb-2">{Math.round(current)}{unit}</p>
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
+        <div className="h-full rounded-full bg-slate-900 transition-all" style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const { userId } = useAuth();
   const [meals, setMeals] = useState<TrackedMeal[]>([]);
+  const [goals, setGoals] = useState<UserGoals | null>(null);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editType, setEditType] = useState('');
 
   useEffect(() => {
     if (!userId) return;
-    fetch(`/api/meals/today?userId=${encodeURIComponent(userId)}`)
-      .then((r) => r.json())
-      .then((data) => setMeals(Array.isArray(data) ? data : []))
-      .catch(() => setMeals([]))
-      .finally(() => setLoading(false));
+    Promise.all([
+      fetch(`/api/meals/today?userId=${encodeURIComponent(userId)}`)
+        .then((r) => r.json())
+        .catch(() => []),
+      fetch(`/api/users/${encodeURIComponent(userId)}/goals`)
+        .then((r) => (r.ok ? r.json() : null))
+        .catch(() => null),
+    ]).then(([mealsData, goalsData]) => {
+      setMeals(Array.isArray(mealsData) ? mealsData : []);
+      setGoals(goalsData);
+    }).finally(() => setLoading(false));
   }, [userId]);
 
-  console.log(
-  meals.map((m, i) => ({
-    i,
-    value: m.total_calories,
-    type: typeof m.total_calories,
-    full: m,
-  }))
-);
-
   const toNum = (val: any) => {
-  const n = typeof val === "string" ? parseFloat(val) : Number(val);
-  return Number.isFinite(n) ? n : 0;
-};
+    const n = typeof val === 'string' ? parseFloat(val) : Number(val);
+    return Number.isFinite(n) ? n : 0;
+  };
 
-const totalCalories = meals.reduce((s, m) => s + toNum(m.total_calories), 0);
-const totalProtein  = meals.reduce((s, m) => s + toNum(m.total_protein), 0);
-const totalCarbs    = meals.reduce((s, m) => s + toNum(m.total_carbs), 0);
-const totalFats     = meals.reduce((s, m) => s + toNum(m.total_fats), 0);
-const totalFibre    = meals.reduce((s, m) => s + toNum(m.total_fibre), 0);
+  const totalCalories = meals.reduce((s, m) => s + toNum(m.total_calories), 0);
+  const totalProtein  = meals.reduce((s, m) => s + toNum(m.total_protein), 0);
+  const totalCarbs    = meals.reduce((s, m) => s + toNum(m.total_carbs), 0);
+  const totalFats     = meals.reduce((s, m) => s + toNum(m.total_fats), 0);
+  const totalFibre    = meals.reduce((s, m) => s + toNum(m.total_fibre), 0);
 
-
-const completion = Math.min(
-  (totalCalories / (toNum(CALORIE_GOAL) || 1)) * 100,
-  100
-);
+  const activeGoals   = goals ?? DEFAULT_GOALS;
+  const calorieGoal   = toNum(activeGoals.calorie_goal);
+  const completion    = Math.min((totalCalories / (calorieGoal || 1)) * 100, 100);
 
   function startEdit(meal: TrackedMeal) {
     setEditingId(meal.id);
@@ -124,14 +151,17 @@ const completion = Math.min(
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-1">
+            {/* Calorie goal card */}
             <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-slate-900">Nutrition Goal</h2>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">Today</span>
+                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                  {goals ? 'Personalised' : 'Default'}
+                </span>
               </div>
 
               <p className="text-4xl font-bold text-slate-900">{Math.round(totalCalories)} kcal</p>
-              <p className="text-sm text-slate-500">of {CALORIE_GOAL} kcal target</p>
+              <p className="text-sm text-slate-500">of {Math.round(calorieGoal)} kcal target</p>
 
               <div className="mt-4 h-4 w-full overflow-hidden rounded-full bg-slate-200">
                 <div className="h-full rounded-full bg-slate-900 transition-all" style={{ width: `${completion}%` }} />
@@ -139,29 +169,18 @@ const completion = Math.min(
 
               <div className="mt-2 flex items-center justify-between text-sm text-slate-600">
                 <span>{Math.round(completion)}% complete</span>
-                <span>{Math.max(CALORIE_GOAL - Math.round(totalCalories), 0)} kcal left</span>
+                <span>{Math.max(Math.round(calorieGoal - totalCalories), 0)} kcal left</span>
               </div>
             </div>
 
+            {/* Macro summary with goals */}
             <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
               <h2 className="mb-3 text-lg font-semibold text-slate-900">Summary</h2>
               <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-2xl bg-slate-50 p-4 text-center">
-                  <p className="text-xs text-slate-500">Protein</p>
-                  <p className="mt-1 text-2xl font-bold text-slate-900">{Math.round(totalProtein)}g</p>
-                </div>
-                <div className="rounded-2xl bg-slate-50 p-4 text-center">
-                  <p className="text-xs text-slate-500">Carbs</p>
-                  <p className="mt-1 text-2xl font-bold text-slate-900">{Math.round(totalCarbs)}g</p>
-                </div>
-                <div className="rounded-2xl bg-slate-50 p-4 text-center">
-                  <p className="text-xs text-slate-500">Fats</p>
-                  <p className="mt-1 text-2xl font-bold text-slate-900">{Math.round(totalFats)}g</p>
-                </div>
-                <div className="rounded-2xl bg-slate-50 p-4 text-center">
-                  <p className="text-xs text-slate-500">Fibre</p>
-                  <p className="mt-1 text-2xl font-bold text-slate-900">{Math.round(totalFibre)}g</p>
-                </div>
+                <MacroBar label="Protein" current={totalProtein} goal={toNum(activeGoals.protein_goal)} />
+                <MacroBar label="Carbs"   current={totalCarbs}   goal={toNum(activeGoals.carbs_goal)} />
+                <MacroBar label="Fats"    current={totalFats}    goal={toNum(activeGoals.fat_goal)} />
+                <MacroBar label="Fibre"   current={totalFibre}   goal={toNum(activeGoals.fibre_goal)} />
                 <div className="rounded-2xl bg-slate-50 p-4 text-center col-span-2">
                   <p className="text-xs text-slate-500">Meals</p>
                   <p className="mt-1 text-2xl font-bold text-slate-900">{meals.length}</p>
