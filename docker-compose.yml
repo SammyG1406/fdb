@@ -175,6 +175,7 @@ services:
     volumes:
       - food_data:/var/lib/postgresql/data
       - ./combined_foods.csv:/data/combined_foods.csv
+      - ./services/food_service/init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: unless-stopped
 
 volumes:
