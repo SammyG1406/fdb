@@ -100,7 +100,9 @@ services:
       POSTGRES_USER: user_user
       POSTGRES_PASSWORD: user_pass
       POSTGRES_DB: user_db
-    volumes: [user_data:/var/lib/postgresql/data]
+    volumes:
+      - user_data:/var/lib/postgresql/data
+      - ./services/user_service/init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: unless-stopped
 
   # ---------- Meal Service + DB ----------
