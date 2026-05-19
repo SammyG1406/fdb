@@ -26,6 +26,9 @@ services:
       - ./frontend/.env
     environment:
       PORT: 3002
+      FOODDB_URL: postgres://food_user:food_password@food-db:5432/food_db
+    depends_on:
+      - food-db
     restart: unless-stopped
     networks:
       - default
