@@ -83,7 +83,7 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!userId) return;
     Promise.all([
-      fetch(`/api/meals/today?userId=${encodeURIComponent(userId)}`)
+      fetch(`/api/tracked-meals?userId=${encodeURIComponent(userId)}&date=${new Date().toISOString().split('T')[0]}`)
         .then((r) => r.json())
         .catch(() => []),
       fetch(`/api/users/${encodeURIComponent(userId)}/goals`)
@@ -121,7 +121,7 @@ export default function DashboardPage() {
   }
 
   async function saveEdit(id: number) {
-    const res = await fetch(`/api/meals/${id}`, {
+    const res = await fetch(`/api/tracked-meals/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ mealType: editType }),
@@ -135,7 +135,7 @@ export default function DashboardPage() {
   }
 
   async function deleteMeal(id: number) {
-    const res = await fetch(`/api/meals/${id}`, { method: 'DELETE' });
+    const res = await fetch(`/api/tracked-meals/${id}`, { method: 'DELETE' });
     if (res.ok) {
       setMeals((prev) => prev.filter((m) => m.id !== id));
     }

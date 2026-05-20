@@ -234,7 +234,7 @@ export default function LoggingPage() {
                 <div className="mb-4 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
                   <p className="text-sm font-semibold text-slate-900 mb-1">{selectedFood.name}</p>
                   <p className="text-xs text-slate-500">
-                    {Math.ceil(selectedFood.calories)} kcal · {selectedFood.protein}g P · {selectedFood.carbs}g C · {selectedFood.fats}g F · {selectedFood.fiber ?? 0}g Fibre per 100g
+                    {Math.ceil(selectedFood.calories)} kcal · {selectedFood.protein.toFixed(1)}g P · {selectedFood.carbs.toFixed(1)}g C · {selectedFood.fats.toFixed(1)}g F · {(selectedFood.fiber ?? 0).toFixed(1)}g Fibre per 100g
                   </p>
                 </div>
               )}

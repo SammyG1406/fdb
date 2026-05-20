@@ -29,10 +29,7 @@ app.use("/users", async (req, res) => {
 
 // Tracked meals
 app.use("/tracked-meals", async (req, res) => {
-  const qs = Object.keys(req.query).length
-    ? "?" + new URLSearchParams(req.query).toString()
-    : "";
-  const url = `${TRACKING_SERVICE_URL}/tracked-meals${qs}`;
+  const url = `${TRACKING_SERVICE_URL}${req.originalUrl}`;
   await proxyRequest(req, res, url);
 });
 
