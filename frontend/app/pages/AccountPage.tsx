@@ -1,7 +1,33 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth, useUser } from '@clerk/nextjs';
+
+type Gender        = 'male' | 'female' | 'non_binary' | 'prefer_not_to_say';
+type Goal          = 'lose_weight' | 'maintain' | 'build_muscle' | 'improve_fitness';
+type ActivityLevel = 'sedentary' | 'lightly_active' | 'moderately_active' | 'very_active' | 'extremely_active';
+
+const GENDERS: { value: Gender; label: string }[] = [
+  { value: 'male',              label: 'Male' },
+  { value: 'female',            label: 'Female' },
+  { value: 'non_binary',        label: 'Non-binary' },
+  { value: 'prefer_not_to_say', label: 'Prefer not to say' },
+];
+
+const GOALS: { value: Goal; label: string }[] = [
+  { value: 'lose_weight',     label: 'Lose Weight' },
+  { value: 'maintain',        label: 'Maintain' },
+  { value: 'build_muscle',    label: 'Build Muscle' },
+  { value: 'improve_fitness', label: 'Improve Fitness' },
+];
+
+const ACTIVITY_LEVELS: { value: ActivityLevel; label: string; sub: string }[] = [
+  { value: 'sedentary',         label: 'Sedentary',         sub: 'Little or no exercise' },
+  { value: 'lightly_active',    label: 'Lightly Active',    sub: '1–3 days / week' },
+  { value: 'moderately_active', label: 'Moderately Active', sub: '3–5 days / week' },
+  { value: 'very_active',       label: 'Very Active',       sub: '6–7 days / week' },
+  { value: 'extremely_active',  label: 'Extremely Active',  sub: 'Physical job + daily training' },
+];
 
 const securitySettings = [
   { label: 'Two-Factor Authentication', value: 'Enabled' },
@@ -30,9 +56,28 @@ export default function AccountPage() {
   const [weight, setWeight] = useState('');
   const [height, setHeight] = useState('');
   const [age, setAge] = useState('');
+  const [gender, setGender] = useState<Gender | ''>('');
+  const [goal, setGoal] = useState<Goal | ''>('');
+  const [activityLevel, setActivityLevel] = useState<ActivityLevel | ''>('');
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  useEffect(() => {
+    if (!userId) return;
+    fetch(`/api/users/${userId}/profile`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!data) return;
+        if (data.weight)         setWeight(String(data.weight));
+        if (data.height)         setHeight(String(data.height));
+        if (data.age)            setAge(String(data.age));
+        if (data.gender)         setGender(data.gender);
+        if (data.goal)           setGoal(data.goal);
+        if (data.activity_level) setActivityLevel(data.activity_level);
+      })
+      .catch(() => {});
+  }, [userId]);
 
   async function handleSaveAttributes() {
     if (!userId) return;
@@ -44,9 +89,12 @@ export default function AccountPage() {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          weight: weight ? Number(weight) : undefined,
-          height: height ? Number(height) : undefined,
-          age: age ? Number(age) : undefined,
+          weight:         weight         ? Number(weight) : undefined,
+          height:         height         ? Number(height) : undefined,
+          age:            age            ? Number(age)    : undefined,
+          gender:         gender         || undefined,
+          goal:           goal           || undefined,
+          activity_level: activityLevel  || undefined,
         }),
       });
       if (!res.ok) {
@@ -141,6 +189,64 @@ export default function AccountPage() {
                       className="w-full rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-900 ring-1 ring-slate-200 outline-none focus:ring-slate-400"
                     />
                   </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate-600">Gender</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {GENDERS.map(({ value, label }) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => setGender(value)}
+                          className={`rounded-xl py-2 text-xs font-medium transition-all ${
+                            gender === value
+                              ? 'bg-slate-900 text-white'
+                              : 'bg-slate-50 text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate-600">Primary Goal</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {GOALS.map(({ value, label }) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => setGoal(value)}
+                          className={`rounded-xl py-2 text-xs font-medium transition-all ${
+                            goal === value
+                              ? 'bg-slate-900 text-white'
+                              : 'bg-slate-50 text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate-600">Activity Level</label>
+                    <div className="flex flex-col gap-1.5">
+                      {ACTIVITY_LEVELS.map(({ value, label, sub }) => (
+                        <button
+                          key={value}
+                          type="button"
+                          onClick={() => setActivityLevel(value)}
+                          className={`flex items-center justify-between rounded-xl px-3 py-2 transition-all ${
+                            activityLevel === value
+                              ? 'bg-slate-900 text-white'
+                              : 'bg-slate-50 text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100'
+                          }`}
+                        >
+                          <span className="text-xs font-medium">{label}</span>
+                          <span className={`text-xs ${activityLevel === value ? 'text-slate-300' : 'text-slate-400'}`}>{sub}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   {saveError && (
                     <p className="text-xs text-red-500">{saveError}</p>
                   )}
@@ -176,6 +282,18 @@ export default function AccountPage() {
                   <div>
                     <p className="text-xs uppercase tracking-wide text-slate-400">Age</p>
                     <p className="text-sm text-slate-800">{age || '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-slate-400">Gender</p>
+                    <p className="text-sm text-slate-800">{GENDERS.find(g => g.value === gender)?.label ?? '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-slate-400">Goal</p>
+                    <p className="text-sm text-slate-800">{GOALS.find(g => g.value === goal)?.label ?? '—'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-wide text-slate-400">Activity Level</p>
+                    <p className="text-sm text-slate-800">{ACTIVITY_LEVELS.find(a => a.value === activityLevel)?.label ?? '—'}</p>
                   </div>
                 </div>
               )}

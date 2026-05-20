@@ -80,7 +80,7 @@ export default function LoggingPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/meals/log', {
+      const res = await fetch('/api/tracked-meals', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -101,8 +101,11 @@ export default function LoggingPage() {
         }),
       });
       if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || 'Failed to log meal');
+        const contentType = res.headers.get('content-type') ?? '';
+        const msg = contentType.includes('application/json')
+          ? (await res.json()).error
+          : await res.text();
+        throw new Error(msg || 'Failed to log meal');
       }
       setSubmitted(true);
     } catch (err) {
