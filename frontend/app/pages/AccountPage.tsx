@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth, useUser } from '@clerk/nextjs';
+import { CARD, BTN_PRIMARY } from '../lib/theme';
 
 type Gender        = 'male' | 'female' | 'non_binary' | 'prefer_not_to_say';
 type Goal          = 'lose_weight' | 'maintain' | 'build_muscle' | 'improve_fitness';
@@ -47,6 +48,10 @@ const accountStats = {
   friends: 12,
   streakDays: 18,
 };
+
+const SELECT_BTN = 'rounded-xl transition-all';
+const SELECTED = 'bg-gradient-brand text-white shadow-md shadow-violet-500/25';
+const UNSELECTED = 'bg-slate-50 text-slate-700 ring-1 ring-slate-200 hover:bg-indigo-50';
 
 export default function AccountPage() {
   const { userId } = useAuth();
@@ -117,7 +122,7 @@ export default function AccountPage() {
     : '';
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 md:p-10">
+    <div className="min-h-screen p-6 md:p-10">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 flex flex-col gap-2">
           <h1 className="text-3xl font-bold text-slate-900">Account Dashboard</h1>
@@ -128,10 +133,11 @@ export default function AccountPage() {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-1">
-            <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <div className={`${CARD} p-6 relative overflow-hidden`}>
+              <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-gradient-brand opacity-10 blur-2xl" />
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-slate-900">Profile</h2>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                <span className="rounded-full bg-gradient-brand px-3 py-1 text-xs font-medium text-white">
                   Premium
                 </span>
               </div>
@@ -144,13 +150,13 @@ export default function AccountPage() {
             </div>
 
             {/* Physical Attributes */}
-            <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <div className={`${CARD} p-6`}>
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-slate-900">Physical Attributes</h2>
                 {!editing && (
                   <button
                     onClick={() => { setEditing(true); setSaveSuccess(false); }}
-                    className="rounded-2xl bg-slate-900 px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90"
+                    className={`rounded-2xl px-3 py-1.5 text-xs font-medium ${BTN_PRIMARY}`}
                   >
                     Edit
                   </button>
@@ -166,7 +172,7 @@ export default function AccountPage() {
                       placeholder="e.g. 75"
                       value={weight}
                       onChange={(e) => setWeight(e.target.value)}
-                      className="w-full rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-900 ring-1 ring-slate-200 outline-none focus:ring-slate-400"
+                      className="w-full rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-900 ring-1 ring-slate-200 outline-none focus:ring-violet-400"
                     />
                   </div>
                   <div>
@@ -176,7 +182,7 @@ export default function AccountPage() {
                       placeholder="e.g. 175"
                       value={height}
                       onChange={(e) => setHeight(e.target.value)}
-                      className="w-full rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-900 ring-1 ring-slate-200 outline-none focus:ring-slate-400"
+                      className="w-full rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-900 ring-1 ring-slate-200 outline-none focus:ring-violet-400"
                     />
                   </div>
                   <div>
@@ -186,7 +192,7 @@ export default function AccountPage() {
                       placeholder="e.g. 28"
                       value={age}
                       onChange={(e) => setAge(e.target.value)}
-                      className="w-full rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-900 ring-1 ring-slate-200 outline-none focus:ring-slate-400"
+                      className="w-full rounded-xl bg-slate-50 px-3 py-2 text-sm text-slate-900 ring-1 ring-slate-200 outline-none focus:ring-violet-400"
                     />
                   </div>
                   <div>
@@ -197,11 +203,7 @@ export default function AccountPage() {
                           key={value}
                           type="button"
                           onClick={() => setGender(value)}
-                          className={`rounded-xl py-2 text-xs font-medium transition-all ${
-                            gender === value
-                              ? 'bg-slate-900 text-white'
-                              : 'bg-slate-50 text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100'
-                          }`}
+                          className={`${SELECT_BTN} py-2 text-xs font-medium ${gender === value ? SELECTED : UNSELECTED}`}
                         >
                           {label}
                         </button>
@@ -216,11 +218,7 @@ export default function AccountPage() {
                           key={value}
                           type="button"
                           onClick={() => setGoal(value)}
-                          className={`rounded-xl py-2 text-xs font-medium transition-all ${
-                            goal === value
-                              ? 'bg-slate-900 text-white'
-                              : 'bg-slate-50 text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100'
-                          }`}
+                          className={`${SELECT_BTN} py-2 text-xs font-medium ${goal === value ? SELECTED : UNSELECTED}`}
                         >
                           {label}
                         </button>
@@ -235,26 +233,22 @@ export default function AccountPage() {
                           key={value}
                           type="button"
                           onClick={() => setActivityLevel(value)}
-                          className={`flex items-center justify-between rounded-xl px-3 py-2 transition-all ${
-                            activityLevel === value
-                              ? 'bg-slate-900 text-white'
-                              : 'bg-slate-50 text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100'
-                          }`}
+                          className={`${SELECT_BTN} flex items-center justify-between px-3 py-2 ${activityLevel === value ? SELECTED : UNSELECTED}`}
                         >
                           <span className="text-xs font-medium">{label}</span>
-                          <span className={`text-xs ${activityLevel === value ? 'text-slate-300' : 'text-slate-400'}`}>{sub}</span>
+                          <span className={`text-xs ${activityLevel === value ? 'text-indigo-100' : 'text-slate-400'}`}>{sub}</span>
                         </button>
                       ))}
                     </div>
                   </div>
                   {saveError && (
-                    <p className="text-xs text-red-500">{saveError}</p>
+                    <p className="text-xs text-rose-500">{saveError}</p>
                   )}
                   <div className="flex gap-2 pt-1">
                     <button
                       onClick={handleSaveAttributes}
                       disabled={saving}
-                      className="flex-1 rounded-2xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-40"
+                      className={`flex-1 rounded-2xl px-4 py-2 text-sm font-medium ${BTN_PRIMARY} disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:shadow-md`}
                     >
                       {saving ? 'Saving…' : 'Save'}
                     </button>
@@ -269,7 +263,7 @@ export default function AccountPage() {
               ) : (
                 <div className="space-y-3 rounded-2xl bg-slate-50 p-4">
                   {saveSuccess && (
-                    <p className="mb-2 text-xs font-medium text-green-600">Attributes updated successfully.</p>
+                    <p className="mb-2 text-xs font-medium text-emerald-600">Attributes updated successfully.</p>
                   )}
                   <div>
                     <p className="text-xs uppercase tracking-wide text-slate-400">Weight</p>
@@ -323,13 +317,13 @@ export default function AccountPage() {
           </div>
 
           <div className="lg:col-span-2 space-y-6">
-            <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <div className={`${CARD} p-6`}>
               <div className="mb-6 flex items-center justify-between">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900">Security</h2>
                   <p className="mt-1 text-sm text-slate-500">Update your login and verification settings</p>
                 </div>
-                <button className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">
+                <button className={`rounded-2xl px-4 py-2 text-sm font-medium ${BTN_PRIMARY}`}>
                   Manage Security
                 </button>
               </div>
@@ -344,13 +338,13 @@ export default function AccountPage() {
               </div>
             </div>
 
-            <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <div className={`${CARD} p-6`}>
               <div className="mb-6 flex items-center justify-between">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900">Preferences</h2>
                   <p className="mt-1 text-sm text-slate-500">Notification and app preferences</p>
                 </div>
-                <button className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">
+                <button className={`rounded-2xl px-4 py-2 text-sm font-medium ${BTN_PRIMARY}`}>
                   Edit Preferences
                 </button>
               </div>
@@ -361,7 +355,7 @@ export default function AccountPage() {
                     <p className="text-sm font-medium text-slate-700">{pref.label}</p>
                     <span className={`rounded-full px-3 py-1 text-xs font-medium ${
                       pref.value === 'On'
-                        ? 'bg-slate-900 text-white'
+                        ? 'bg-gradient-brand text-white'
                         : 'bg-slate-100 text-slate-600'
                     }`}>
                       {pref.value}
@@ -371,10 +365,11 @@ export default function AccountPage() {
               </div>
             </div>
 
-            <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <div className={`${CARD} p-6 relative overflow-hidden`}>
+              <div className="absolute -right-10 -bottom-10 h-32 w-32 rounded-full bg-gradient-brand opacity-10 blur-2xl" />
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-slate-900">Subscription</h2>
-                <span className="rounded-full bg-slate-900 px-3 py-1 text-xs font-medium text-white">Premium</span>
+                <span className="rounded-full bg-gradient-brand px-3 py-1 text-xs font-medium text-white">Premium</span>
               </div>
               <p className="text-sm text-slate-600 mb-4">
                 You have full access to all features including advanced analytics and priority support.

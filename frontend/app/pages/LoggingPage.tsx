@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@clerk/nextjs';
+import { CARD, BTN_PRIMARY } from '../lib/theme';
 
 type Food = {
   id: number;
@@ -124,9 +125,9 @@ export default function LoggingPage() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen bg-slate-50 p-6 md:p-10 flex items-center justify-center">
-        <div className="rounded-3xl bg-white p-10 shadow-sm ring-1 ring-slate-200 text-center max-w-md w-full">
-          <div className="w-14 h-14 rounded-full bg-slate-900 flex items-center justify-center mx-auto mb-4">
+      <div className="min-h-screen p-6 md:p-10 flex items-center justify-center">
+        <div className={`${CARD} p-10 text-center max-w-md w-full`}>
+          <div className="w-14 h-14 rounded-full bg-gradient-brand flex items-center justify-center mx-auto mb-4 shadow-lg shadow-violet-500/30">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="20 6 9 17 4 12" />
             </svg>
@@ -141,7 +142,7 @@ export default function LoggingPage() {
           <div className="flex gap-3 justify-center">
             <button
               onClick={handleReset}
-              className="rounded-2xl bg-slate-900 px-6 py-2.5 text-sm font-medium text-white transition hover:opacity-90"
+              className={`rounded-2xl px-6 py-2.5 text-sm font-medium ${BTN_PRIMARY}`}
             >
               Log Another Meal
             </button>
@@ -152,7 +153,7 @@ export default function LoggingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 md:p-10">
+    <div className="min-h-screen p-6 md:p-10">
       <div className="mx-auto max-w-4xl">
         <div className="mb-8 flex flex-col gap-2">
           <h1 className="text-3xl font-bold text-slate-900">Log a Meal</h1>
@@ -166,17 +167,17 @@ export default function LoggingPage() {
           <div className="lg:col-span-3 space-y-5">
 
             {/* Meal type */}
-            <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <div className={`${CARD} p-6`}>
               <h2 className="mb-4 text-base font-semibold text-slate-900">Meal Type</h2>
               <div className="flex flex-wrap gap-2">
                 {MEAL_TYPES.map((type) => (
                   <button
                     key={type}
                     onClick={() => setMealType(type)}
-                    className={`rounded-2xl px-4 py-2 text-sm font-medium transition-colors ${
+                    className={`rounded-2xl px-4 py-2 text-sm font-medium transition-all ${
                       mealType === type
-                        ? 'bg-slate-900 text-white'
-                        : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                        ? 'bg-gradient-brand text-white shadow-md shadow-violet-500/25'
+                        : 'bg-slate-50 text-slate-600 hover:bg-indigo-50'
                     }`}
                   >
                     {type}
@@ -186,11 +187,11 @@ export default function LoggingPage() {
             </div>
 
             {/* Food search */}
-            <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <div className={`${CARD} p-6`}>
               <h2 className="mb-4 text-base font-semibold text-slate-900">Add Food</h2>
 
-              <div className="mb-4 flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200">
-                <svg className="shrink-0 text-slate-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <div className="mb-4 flex items-center gap-3 rounded-2xl bg-slate-50 px-4 py-3 ring-1 ring-slate-200 focus-within:ring-2 focus-within:ring-violet-400 transition">
+                <svg className="shrink-0 text-violet-400" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8" />
                   <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
@@ -219,7 +220,7 @@ export default function LoggingPage() {
                           setSelectedFood(food);
                           setFoodSearch(food.name);
                         }}
-                        className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-0"
+                        className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-indigo-50 transition-colors border-b border-slate-100 last:border-0"
                       >
                         <span className="text-sm font-medium text-slate-800">{food.name}</span>
                         <span className="text-xs text-slate-500">{Math.ceil(food.calories)} kcal / 100g</span>
@@ -231,7 +232,7 @@ export default function LoggingPage() {
 
               {/* Selected food preview */}
               {selectedFood && (
-                <div className="mb-4 rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-200">
+                <div className="mb-4 rounded-2xl bg-gradient-brand-soft p-4 ring-1 ring-violet-100">
                   <p className="text-sm font-semibold text-slate-900 mb-1">{selectedFood.name}</p>
                   <p className="text-xs text-slate-500">
                     {Math.ceil(selectedFood.calories)} kcal · {Number(selectedFood.protein).toFixed(1)}g P · {Number(selectedFood.carbs).toFixed(1)}g C · {Number(selectedFood.fats).toFixed(1)}g F · {Number((selectedFood.fiber ?? 0)).toFixed(1)}g Fibre per 100g
@@ -247,7 +248,7 @@ export default function LoggingPage() {
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setQuantity((q) => Math.max(10, q - 10))}
-                    className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                    className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="5" y1="12" x2="19" y2="12" />
@@ -258,11 +259,11 @@ export default function LoggingPage() {
                     min={1}
                     value={quantity}
                     onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
-                    className="w-24 rounded-xl bg-slate-50 px-3 py-2 text-center text-sm font-medium text-slate-900 ring-1 ring-slate-200 outline-none focus:ring-slate-400"
+                    className="w-24 rounded-xl bg-slate-50 px-3 py-2 text-center text-sm font-medium text-slate-900 ring-1 ring-slate-200 outline-none focus:ring-violet-400"
                   />
                   <button
                     onClick={() => setQuantity((q) => q + 10)}
-                    className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+                    className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-600 hover:bg-indigo-100 hover:text-indigo-700 transition-colors"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <line x1="12" y1="5" x2="12" y2="19" />
@@ -281,28 +282,28 @@ export default function LoggingPage() {
               <button
                 onClick={addItem}
                 disabled={!selectedFood}
-                className="w-full rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+                className={`w-full rounded-2xl px-4 py-2.5 text-sm font-medium ${BTN_PRIMARY} disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:shadow-md disabled:cursor-not-allowed`}
               >
                 Add to Meal
               </button>
             </div>
 
             {/* Notes */}
-            <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <div className={`${CARD} p-6`}>
               <h2 className="mb-3 text-base font-semibold text-slate-900">Notes <span className="text-slate-400 font-normal text-xs">(optional)</span></h2>
               <textarea
                 rows={3}
                 placeholder="Any notes about this meal…"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full resize-none rounded-2xl bg-slate-50 p-4 text-sm text-slate-900 placeholder:text-slate-400 ring-1 ring-slate-200 outline-none focus:ring-slate-400"
+                className="w-full resize-none rounded-2xl bg-slate-50 p-4 text-sm text-slate-900 placeholder:text-slate-400 ring-1 ring-slate-200 outline-none focus:ring-violet-400"
               />
             </div>
           </div>
 
           {/* Right: summary */}
           <div className="lg:col-span-2 space-y-5">
-            <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sticky top-6">
+            <div className={`${CARD} p-6 sticky top-6`}>
               <h2 className="mb-4 text-base font-semibold text-slate-900">
                 {mealType} Summary
               </h2>
@@ -324,7 +325,7 @@ export default function LoggingPage() {
                         </div>
                         <button
                           onClick={() => removeItem(i)}
-                          className="ml-3 shrink-0 text-slate-400 hover:text-slate-600 transition-colors"
+                          className="ml-3 shrink-0 text-slate-400 hover:text-rose-500 transition-colors"
                         >
                           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <line x1="18" y1="6" x2="6" y2="18" />
@@ -336,26 +337,26 @@ export default function LoggingPage() {
                   </div>
 
                   {/* Totals */}
-                  <div className="rounded-2xl bg-slate-50 p-4 mb-4">
+                  <div className="rounded-2xl bg-gradient-brand-soft p-4 mb-4">
                     <div className="mb-3 flex items-baseline justify-between">
                       <span className="text-sm text-slate-600">Total Calories</span>
-                      <span className="text-xl font-bold text-slate-900">{totals.calories} kcal</span>
+                      <span className="text-xl font-bold text-gradient-brand">{totals.calories} kcal</span>
                     </div>
                     <div className="grid grid-cols-4 gap-2">
                       <div className="text-center">
-                        <p className="text-[10px] uppercase tracking-wide text-slate-400">Protein</p>
+                        <p className="text-[10px] uppercase tracking-wide text-rose-500">Protein</p>
                         <p className="text-sm font-semibold text-slate-800">{totals.protein}g</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-[10px] uppercase tracking-wide text-slate-400">Carbs</p>
+                        <p className="text-[10px] uppercase tracking-wide text-amber-500">Carbs</p>
                         <p className="text-sm font-semibold text-slate-800">{totals.carbs}g</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-[10px] uppercase tracking-wide text-slate-400">Fats</p>
+                        <p className="text-[10px] uppercase tracking-wide text-sky-500">Fats</p>
                         <p className="text-sm font-semibold text-slate-800">{totals.fats}g</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-[10px] uppercase tracking-wide text-slate-400">Fibre</p>
+                        <p className="text-[10px] uppercase tracking-wide text-emerald-500">Fibre</p>
                         <p className="text-sm font-semibold text-slate-800">{totals.fiber}g</p>
                       </div>
                     </div>
@@ -364,12 +365,12 @@ export default function LoggingPage() {
               )}
 
               {error && (
-                <p className="mb-3 text-xs text-red-500">{error}</p>
+                <p className="mb-3 text-xs text-rose-500">{error}</p>
               )}
               <button
                 onClick={handleSubmit}
                 disabled={items.length === 0 || loading}
-                className="w-full rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
+                className={`w-full rounded-2xl px-4 py-2.5 text-sm font-medium ${BTN_PRIMARY} disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:shadow-md disabled:cursor-not-allowed`}
               >
                 {loading ? 'Submitting…' : 'Submit Meal Log'}
               </button>

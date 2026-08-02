@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Calepo",
+  title: "CalepoFT",
   description: "Track your meals and hit your fitness goals",
 };
 

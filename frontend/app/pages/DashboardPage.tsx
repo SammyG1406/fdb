@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/nextjs';
+import { CARD, MACRO_COLORS, BTN_PRIMARY } from '../lib/theme';
 
 type MealItem = {
   id: number;
@@ -56,17 +57,20 @@ function formatTime(loggedAt: string) {
   return new Date(loggedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
-function MacroBar({ label, current, goal, unit = 'g' }: { label: string; current: number; goal: number; unit?: string }) {
+function MacroBar({
+  label, current, goal, unit = 'g', color,
+}: { label: string; current: number; goal: number; unit?: string; color: keyof typeof MACRO_COLORS }) {
   const pct = Math.min((current / (goal || 1)) * 100, 100);
+  const c = MACRO_COLORS[color];
   return (
-    <div className="rounded-2xl bg-slate-50 p-4">
+    <div className={`rounded-2xl ${c.soft} p-4 ring-1 ${c.ring}`}>
       <div className="flex items-center justify-between mb-1">
-        <p className="text-xs text-slate-500">{label}</p>
+        <p className={`text-xs font-medium ${c.text}`}>{label}</p>
         <p className="text-xs text-slate-400">{Math.round(current)}/{Math.round(goal)}{unit}</p>
       </div>
       <p className="text-xl font-bold text-slate-900 mb-2">{Math.round(current)}{unit}</p>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
-        <div className="h-full rounded-full bg-slate-900 transition-all" style={{ width: `${pct}%` }} />
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/70">
+        <div className={`h-full rounded-full ${c.bg} transition-all`} style={{ width: `${pct}%` }} />
       </div>
     </div>
   );
@@ -95,7 +99,7 @@ export default function DashboardPage() {
     }).finally(() => setLoading(false));
   }, [userId]);
 
-  const toNum = (val: any) => {
+  const toNum = (val: unknown) => {
     const n = typeof val === 'string' ? parseFloat(val) : Number(val);
     return Number.isFinite(n) ? n : 0;
   };
@@ -142,7 +146,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 md:p-10">
+    <div className="min-h-screen p-6 md:p-10">
       <div className="mx-auto max-w-7xl">
         <div className="mb-8 flex flex-col gap-2">
           <h1 className="text-3xl font-bold text-slate-900">Daily Dashboard</h1>
@@ -152,19 +156,20 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="space-y-6 lg:col-span-1">
             {/* Calorie goal card */}
-            <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <div className={`${CARD} p-6 overflow-hidden relative`}>
+              <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-brand opacity-10 blur-2xl" />
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-slate-900">Nutrition Goal</h2>
-                <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+                <span className="rounded-full bg-gradient-brand-soft px-3 py-1 text-xs font-medium text-violet-700">
                   {goals ? 'Personalised' : 'Default'}
                 </span>
               </div>
 
-              <p className="text-4xl font-bold text-slate-900">{Math.round(totalCalories)} kcal</p>
+              <p className="text-4xl font-bold text-gradient-brand">{Math.round(totalCalories)} kcal</p>
               <p className="text-sm text-slate-500">of {Math.round(calorieGoal)} kcal target</p>
 
-              <div className="mt-4 h-4 w-full overflow-hidden rounded-full bg-slate-200">
-                <div className="h-full rounded-full bg-slate-900 transition-all" style={{ width: `${completion}%` }} />
+              <div className="mt-4 h-4 w-full overflow-hidden rounded-full bg-slate-100">
+                <div className="h-full rounded-full bg-gradient-brand transition-all" style={{ width: `${completion}%` }} />
               </div>
 
               <div className="mt-2 flex items-center justify-between text-sm text-slate-600">
@@ -174,14 +179,14 @@ export default function DashboardPage() {
             </div>
 
             {/* Macro summary with goals */}
-            <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <div className={`${CARD} p-6`}>
               <h2 className="mb-3 text-lg font-semibold text-slate-900">Summary</h2>
               <div className="grid grid-cols-2 gap-4">
-                <MacroBar label="Protein" current={totalProtein} goal={toNum(activeGoals.protein_goal)} />
-                <MacroBar label="Carbs"   current={totalCarbs}   goal={toNum(activeGoals.carbs_goal)} />
-                <MacroBar label="Fats"    current={totalFats}    goal={toNum(activeGoals.fat_goal)} />
-                <MacroBar label="Fibre"   current={totalFibre}   goal={toNum(activeGoals.fibre_goal)} />
-                <div className="rounded-2xl bg-slate-50 p-4 text-center col-span-2">
+                <MacroBar label="Protein" current={totalProtein} goal={toNum(activeGoals.protein_goal)} color="protein" />
+                <MacroBar label="Carbs"   current={totalCarbs}   goal={toNum(activeGoals.carbs_goal)} color="carbs" />
+                <MacroBar label="Fats"    current={totalFats}    goal={toNum(activeGoals.fat_goal)} color="fats" />
+                <MacroBar label="Fibre"   current={totalFibre}   goal={toNum(activeGoals.fibre_goal)} color="fibre" />
+                <div className="rounded-2xl bg-gradient-brand-soft p-4 text-center col-span-2">
                   <p className="text-xs text-slate-500">Meals</p>
                   <p className="mt-1 text-2xl font-bold text-slate-900">{meals.length}</p>
                 </div>
@@ -190,11 +195,11 @@ export default function DashboardPage() {
           </div>
 
           <div className="lg:col-span-2 space-y-6">
-            <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <div className={`${CARD} p-6`}>
               <div className="mb-6 flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold text-slate-900">Today's Meals</h2>
-                  <p className="mt-1 text-sm text-slate-500">Meals you've logged today</p>
+                  <h2 className="text-lg font-semibold text-slate-900">Today&apos;s Meals</h2>
+                  <p className="mt-1 text-sm text-slate-500">Meals you&apos;ve logged today</p>
                 </div>
               </div>
 
@@ -211,7 +216,7 @@ export default function DashboardPage() {
                           <select
                             value={editType}
                             onChange={(e) => setEditType(e.target.value)}
-                            className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-900"
+                            className="flex-1 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-400"
                           >
                             {MEAL_TYPES.map((t) => (
                               <option key={t} value={t}>{t}</option>
@@ -219,7 +224,7 @@ export default function DashboardPage() {
                           </select>
                           <button
                             onClick={() => saveEdit(meal.id)}
-                            className="rounded-xl bg-slate-900 px-3 py-2 text-xs font-medium text-white hover:opacity-90"
+                            className={`rounded-xl px-3 py-2 text-xs font-medium ${BTN_PRIMARY}`}
                           >
                             Save
                           </button>
@@ -248,13 +253,13 @@ export default function DashboardPage() {
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-medium text-slate-700">{Math.round(meal.total_calories)} kcal</span>
-                            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">
+                            <span className="rounded-full bg-gradient-brand-soft px-3 py-1 text-xs text-violet-700">
                               {formatTime(meal.logged_at)}
                             </span>
                             <button
                               onClick={() => startEdit(meal)}
                               title="Edit meal type"
-                              className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-200 hover:text-slate-700"
+                              className="rounded-lg p-1.5 text-slate-400 hover:bg-indigo-100 hover:text-indigo-700"
                             >
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
@@ -264,7 +269,7 @@ export default function DashboardPage() {
                             <button
                               onClick={() => deleteMeal(meal.id)}
                               title="Delete meal"
-                              className="rounded-lg p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-500"
+                              className="rounded-lg p-1.5 text-slate-400 hover:bg-rose-50 hover:text-rose-500"
                             >
                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <polyline points="3 6 5 6 21 6" />
@@ -283,13 +288,13 @@ export default function DashboardPage() {
               )}
             </div>
 
-            <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <div className={`${CARD} p-6`}>
               <div className="mb-6 flex items-center justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold text-slate-900">Today's Focus</h2>
+                  <h2 className="text-lg font-semibold text-slate-900">Today&apos;s Focus</h2>
                   <p className="mt-1 text-sm text-slate-500">Action items and reminders to finish strong</p>
                 </div>
-                <button className="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">
+                <button className={`rounded-2xl px-4 py-2 text-sm font-medium ${BTN_PRIMARY}`}>
                   Manage Reminders
                 </button>
               </div>
@@ -304,16 +309,16 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+            <div className={`${CARD} p-6`}>
               <h2 className="mb-4 text-lg font-semibold text-slate-900">Weekly Points</h2>
-              <div className="flex items-center justify-between rounded-2xl bg-slate-50 p-5">
+              <div className="flex items-center justify-between rounded-2xl bg-gradient-brand p-5 text-white">
                 <div>
-                  <p className="text-sm text-slate-600">Total Points</p>
-                  <p className="text-3xl font-bold text-slate-900">1,420</p>
+                  <p className="text-sm text-indigo-100">Total Points</p>
+                  <p className="text-3xl font-bold">1,420</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm text-slate-500">Target</p>
-                  <p className="text-xl font-semibold text-slate-900">2,000</p>
+                  <p className="text-sm text-indigo-100">Target</p>
+                  <p className="text-xl font-semibold">2,000</p>
                 </div>
               </div>
             </div>

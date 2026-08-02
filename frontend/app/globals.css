@@ -3,6 +3,15 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* CalepoFT brand gradient — indigo → violet → pink → amber */
+  --brand-1: #4f46e5;
+  --brand-2: #8b5cf6;
+  --brand-3: #ec4899;
+  --brand-4: #f59e0b;
+
+  --gradient-brand: linear-gradient(120deg, var(--brand-1) 0%, var(--brand-2) 40%, var(--brand-3) 75%, var(--brand-4) 100%);
+  --gradient-brand-soft: linear-gradient(120deg, rgb(79 70 229 / 0.12) 0%, rgb(139 92 246 / 0.12) 45%, rgb(236 72 153 / 0.12) 100%);
 }
 
 @theme inline {
@@ -12,15 +21,50 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+::selection {
+  background: var(--brand-2);
+  color: #fff;
+}
+
+.text-gradient-brand {
+  background-image: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.bg-gradient-brand {
+  background-image: var(--gradient-brand);
+}
+
+.bg-gradient-brand-soft {
+  background-image: var(--gradient-brand-soft);
+}
+
+.ring-gradient-brand {
+  position: relative;
+}
+
+@keyframes helix-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes helix-drift {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-16px); }
+}
+
+.animate-helix-spin {
+  animation: helix-spin 40s linear infinite;
+}
+
+.animate-helix-drift {
+  animation: helix-drift 6s ease-in-out infinite;
 }

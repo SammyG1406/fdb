@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth, useUser } from '@clerk/nextjs';
+import Logo from '../components/Logo';
 
 type Gender        = 'male' | 'female' | 'non_binary' | 'prefer_not_to_say';
 type Goal          = 'lose_weight' | 'maintain' | 'build_muscle' | 'improve_fitness';
@@ -34,6 +35,10 @@ function calcAge(dob: string) {
   if (!dob) return undefined;
   return Math.floor((Date.now() - new Date(dob).getTime()) / (365.25 * 24 * 60 * 60 * 1000));
 }
+
+const SELECT_BTN = 'rounded-xl transition-all';
+const SELECTED = 'bg-gradient-brand text-white shadow-md shadow-violet-500/25';
+const UNSELECTED = 'bg-slate-50 text-slate-700 ring-1 ring-slate-200 hover:bg-indigo-50';
 
 export default function OnboardingPage() {
   const router     = useRouter();
@@ -94,18 +99,15 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-pink-50 flex flex-col items-center justify-center p-6">
 
       {/* Brand */}
-      <div className="mb-8 text-center">
-        <div className="inline-flex items-center gap-2 rounded-2xl bg-slate-900 px-4 py-2">
-          <span className="text-sm font-bold text-white">Calepo</span>
-        </div>
-        <p className="mt-2 text-xs text-slate-400">Nutrition Tracker</p>
+      <div className="mb-8">
+        <Logo size="lg" showSubtitle />
       </div>
 
       {/* Card */}
-      <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
+      <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-lg shadow-indigo-500/5 ring-1 ring-slate-200">
 
         {/* Progress */}
         <div className="flex gap-2 mb-7">
@@ -113,7 +115,7 @@ export default function OnboardingPage() {
             <div
               key={i}
               className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-                i <= step ? 'bg-slate-900' : 'bg-slate-200'
+                i <= step ? 'bg-gradient-brand' : 'bg-slate-200'
               }`}
             />
           ))}
@@ -122,7 +124,7 @@ export default function OnboardingPage() {
         {/* ── Step 1 ── */}
         {step === 0 && (
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Step 1 of 2</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-violet-500">Step 1 of 2</p>
             <h1 className="mt-1 text-2xl font-bold text-slate-900">Welcome, {displayName}!</h1>
             <p className="mt-1 mb-6 text-sm text-slate-500">
               Tell us about yourself so we can personalise your nutrition plan.
@@ -137,7 +139,7 @@ export default function OnboardingPage() {
                     placeholder="e.g. 175"
                     value={height}
                     onChange={(e) => setHeight(e.target.value)}
-                    className="w-full rounded-xl bg-slate-50 px-3 py-2.5 text-sm text-slate-900 ring-1 ring-slate-200 outline-none focus:ring-2 focus:ring-slate-400"
+                    className="w-full rounded-xl bg-slate-50 px-3 py-2.5 text-sm text-slate-900 ring-1 ring-slate-200 outline-none focus:ring-2 focus:ring-violet-400"
                   />
                 </div>
                 <div>
@@ -147,7 +149,7 @@ export default function OnboardingPage() {
                     placeholder="e.g. 75"
                     value={weight}
                     onChange={(e) => setWeight(e.target.value)}
-                    className="w-full rounded-xl bg-slate-50 px-3 py-2.5 text-sm text-slate-900 ring-1 ring-slate-200 outline-none focus:ring-2 focus:ring-slate-400"
+                    className="w-full rounded-xl bg-slate-50 px-3 py-2.5 text-sm text-slate-900 ring-1 ring-slate-200 outline-none focus:ring-2 focus:ring-violet-400"
                   />
                 </div>
               </div>
@@ -159,7 +161,7 @@ export default function OnboardingPage() {
                   value={dob}
                   onChange={(e) => setDob(e.target.value)}
                   max={new Date().toISOString().split('T')[0]}
-                  className="w-full rounded-xl bg-slate-50 px-3 py-2.5 text-sm text-slate-900 ring-1 ring-slate-200 outline-none focus:ring-2 focus:ring-slate-400"
+                  className="w-full rounded-xl bg-slate-50 px-3 py-2.5 text-sm text-slate-900 ring-1 ring-slate-200 outline-none focus:ring-2 focus:ring-violet-400"
                 />
                 {dob && (
                   <p className="mt-1 text-xs text-slate-400">You are {calcAge(dob)} years old</p>
@@ -174,11 +176,7 @@ export default function OnboardingPage() {
                       key={value}
                       type="button"
                       onClick={() => setGender(value)}
-                      className={`rounded-xl py-2.5 text-sm font-medium transition-all ${
-                        gender === value
-                          ? 'bg-slate-900 text-white'
-                          : 'bg-slate-50 text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100'
-                      }`}
+                      className={`${SELECT_BTN} py-2.5 text-sm font-medium ${gender === value ? SELECTED : UNSELECTED}`}
                     >
                       {label}
                     </button>
@@ -193,7 +191,7 @@ export default function OnboardingPage() {
               </button>
               <button
                 onClick={() => setStep(1)}
-                className="rounded-2xl bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity"
+                className="rounded-2xl bg-gradient-brand px-6 py-2.5 text-sm font-semibold text-white shadow-md shadow-violet-500/25 hover:shadow-lg hover:shadow-violet-500/40 transition"
               >
                 Continue →
               </button>
@@ -204,7 +202,7 @@ export default function OnboardingPage() {
         {/* ── Step 2 ── */}
         {step === 1 && (
           <div>
-            <p className="text-xs font-semibold uppercase tracking-widest text-slate-400">Step 2 of 2</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-violet-500">Step 2 of 2</p>
             <h1 className="mt-1 text-2xl font-bold text-slate-900">Your Goals</h1>
             <p className="mt-1 mb-6 text-sm text-slate-500">
               What are you working towards and how active are you?
@@ -219,11 +217,7 @@ export default function OnboardingPage() {
                       key={value}
                       type="button"
                       onClick={() => setGoal(value)}
-                      className={`flex items-center gap-2.5 rounded-xl px-4 py-3 text-left text-sm font-medium transition-all ${
-                        goal === value
-                          ? 'bg-slate-900 text-white'
-                          : 'bg-slate-50 text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100'
-                      }`}
+                      className={`${SELECT_BTN} flex items-center gap-2.5 px-4 py-3 text-left text-sm font-medium ${goal === value ? SELECTED : UNSELECTED}`}
                     >
                       <span className="text-base">{icon}</span>
                       <span>{label}</span>
@@ -240,14 +234,10 @@ export default function OnboardingPage() {
                       key={value}
                       type="button"
                       onClick={() => setActivityLevel(value)}
-                      className={`flex items-center justify-between rounded-xl px-4 py-2.5 transition-all ${
-                        activityLevel === value
-                          ? 'bg-slate-900 text-white'
-                          : 'bg-slate-50 text-slate-700 ring-1 ring-slate-200 hover:bg-slate-100'
-                      }`}
+                      className={`${SELECT_BTN} flex items-center justify-between px-4 py-2.5 ${activityLevel === value ? SELECTED : UNSELECTED}`}
                     >
                       <span className="text-sm font-medium">{label}</span>
-                      <span className={`text-xs ${activityLevel === value ? 'text-slate-300' : 'text-slate-400'}`}>
+                      <span className={`text-xs ${activityLevel === value ? 'text-indigo-100' : 'text-slate-400'}`}>
                         {sub}
                       </span>
                     </button>
@@ -267,7 +257,7 @@ export default function OnboardingPage() {
               <button
                 onClick={handleComplete}
                 disabled={submitting}
-                className="rounded-2xl bg-slate-900 px-6 py-2.5 text-sm font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-40"
+                className="rounded-2xl bg-gradient-brand px-6 py-2.5 text-sm font-semibold text-white shadow-md shadow-violet-500/25 hover:shadow-lg hover:shadow-violet-500/40 transition disabled:opacity-40"
               >
                 {submitting ? 'Saving…' : 'Get Started'}
               </button>
