@@ -50,21 +50,3 @@ body {
 .ring-gradient-brand {
   position: relative;
 }
-
-@keyframes helix-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-@keyframes helix-drift {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-16px); }
-}
-
-.animate-helix-spin {
-  animation: helix-spin 40s linear infinite;
-}
-
-.animate-helix-drift {
-  animation: helix-drift 6s ease-in-out infinite;
-}

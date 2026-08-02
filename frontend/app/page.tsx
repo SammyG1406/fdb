@@ -2,7 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import Logo from './components/Logo';
-import Helix from './components/Helix';
+import Plexus from './components/Plexus';
 import { BTN_PRIMARY } from './lib/theme';
 
 const FEATURES = [
@@ -59,7 +59,9 @@ export default async function LandingPage() {
   if (userId) redirect('/dashboard');
 
   return (
-    <div className="min-h-screen overflow-hidden bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-950 via-indigo-950 to-slate-950 text-white">
+      <Plexus className="pointer-events-none fixed inset-0 h-full w-full opacity-50" />
+
       {/* Nav */}
       <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-6 py-6 md:px-10">
         <Logo size="md" />
@@ -111,11 +113,8 @@ export default async function LandingPage() {
           <p className="mt-4 text-sm text-slate-400">First time here? Sign up takes under a minute.</p>
         </div>
 
-        {/* Helix flourish */}
-        <div className="relative flex items-center justify-center lg:justify-end">
-          <div className="absolute h-96 w-96 rounded-full bg-gradient-brand opacity-20 blur-3xl" />
-          <Helix className="relative animate-helix-drift" />
-          <Helix className="absolute -right-16 top-10 hidden opacity-30 lg:block animate-helix-drift" strands={10} />
+        <div className="relative hidden h-full min-h-[22rem] lg:block">
+          <div className="absolute right-10 top-1/2 h-80 w-80 -translate-y-1/2 rounded-full bg-gradient-brand opacity-20 blur-3xl" />
         </div>
       </section>
 

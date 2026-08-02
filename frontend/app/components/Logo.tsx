@@ -15,11 +15,8 @@ export default function Logo({
   return (
     <div className="flex items-center gap-2.5">
       <div className={`${s.box} shrink-0 rounded-xl bg-gradient-brand flex items-center justify-center shadow-md shadow-violet-500/30`}>
-        <svg width={s.icon} height={s.icon} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M7 2c0 4 10 4 10 8s-10 4-10 8" />
-          <path d="M17 2c0 4-10 4-10 8s10 4 10 8" />
-          <path d="M8.5 6.5h7" />
-          <path d="M8.5 17.5h7" />
+        <svg width={s.icon} height={s.icon} viewBox="0 0 24 24" fill="white" stroke="none">
+          <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8z" />
         </svg>
       </div>
       <div>
