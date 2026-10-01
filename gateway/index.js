@@ -5,6 +5,7 @@ app.use(express.json());
 
 const USER_SERVICE_URL     = process.env.USER_SERVICE_URL     || "http://user_service:4001";
 const TRACKING_SERVICE_URL = process.env.TRACKING_SERVICE_URL || "http://tracking_service:4003";
+const CHICKEN_SERVICE_URL  = process.env.CHICKEN_SERVICE_URL  || "http://chicken_service:4004";
 
 app.get("/", (_, res) => res.json({ service: "gateway" }));
 
@@ -30,6 +31,12 @@ app.use("/users", async (req, res) => {
 // Tracked meals
 app.use("/tracked-meals", async (req, res) => {
   const url = `${TRACKING_SERVICE_URL}${req.originalUrl}`;
+  await proxyRequest(req, res, url);
+});
+
+// Chicken cuts
+app.use("/chicken", async (req, res) => {
+  const url = `${CHICKEN_SERVICE_URL}${req.originalUrl}`;
   await proxyRequest(req, res, url);
 });
 

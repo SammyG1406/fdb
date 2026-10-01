@@ -32,4 +32,8 @@ scrape_configs:
     metrics_path: /metrics
     static_configs:
       - targets: ["user_service:4001"]
+  - job_name: chicken-service-logs
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["chicken_service:4004"]
   

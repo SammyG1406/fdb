@@ -68,10 +68,12 @@ services:
       USER_SERVICE_URL: http://user_service:4001
       MEAL_SERVICE_URL: http://meal_service:4002
       TRACKING_SERVICE_URL: http://tracking_service:4003
+      CHICKEN_SERVICE_URL: http://chicken_service:4004
     depends_on:
       - user_service
       - meal_service
       - tracking_service
+      - chicken_service
     restart: unless-stopped
     networks:
       - default
@@ -169,6 +171,33 @@ services:
       - ./services/tracking_service/init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: unless-stopped
 
+  # ---------- Chicken Service + DB ----------
+  chicken_service:
+    build:
+      context: .
+      dockerfile: ./services/chicken_service/Dockerfile
+    expose:
+      - "4004"
+    environment:
+      DATABASE_URL: postgres://chicken_user:chicken_pass@chicken-db:5432/chicken_db
+      SERVICE_NAME: chicken_service
+    depends_on: [chicken-db]
+    restart: unless-stopped
+    networks:
+      - default
+      - monitoring
+
+  chicken-db:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: chicken_user
+      POSTGRES_PASSWORD: chicken_pass
+      POSTGRES_DB: chicken_db
+    volumes:
+      - chicken_data:/var/lib/postgresql/data
+      - ./services/chicken_service/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+
   food-db:
     image: postgres:15
     environment:
@@ -186,6 +215,7 @@ volumes:
   meal_data:
   tracking_data:
   food_data:
+  chicken_data:
   prom-data: {}
   grafana-storage: {}
 
