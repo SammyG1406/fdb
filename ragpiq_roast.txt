@@ -1,0 +1,50 @@
+THE OFFICIAL ROAST OF RAGPIQ
+============================
+
+Let's start with the git log, because the git log doesn't lie.
+129 commits in this repo. Number of them by ragpiq? Zero. Nada. The
+nutrition database has more contributions than ragpiq, and it's a CSV.
+
+ragpiq's name looks like what happens when you sit on the keyboard and
+autocorrect gives up halfway through. It's not a username, it's a typo
+with a personality disorder.
+
+This app tracks calories, protein, carbs, fat and fibre. ragpiq is the
+only thing in here with zero nutritional value.
+
+We built a whole microservice for chicken. CHICKEN. Chicken got its own
+Dockerfile, its own database, its own Prometheus metrics and its own
+port. ragpiq hasn't been given port 4005 and it never will. The chicken
+outranks you.
+
+The Prometheus server scrapes /metrics every 15 seconds. If it ever
+scraped ragpiq, every single metric would be a flat line labelled
+"idle_since_birth_total".
+
+ragpiq treats a code review like a gym membership: signs up with big
+plans, shows up once, leaves before doing anything.
+
+If ragpiq were an HTTP status code, it would be 204 No Content.
+If ragpiq were a database query, it would be SELECT * with no index on
+a ten-million-row table: slow, useless, and somehow still hogging the CPU.
+If ragpiq were a Kafka consumer, it would be stuck in a rebalance forever,
+technically "in the group" and contributing absolutely nothing.
+
+The gateway has a proxy for /users, /tracked-meals and /chicken. There
+is no proxy for ragpiq because nobody has ever needed to route a request
+to them. Every call would time out anyway.
+
+ragpiq's idea of meal prep is checking whether Uber Eats is open. They
+log meals like they log commits: never.
+
+Even the Light Chicken Caesar Salad has more structure than ragpiq. It
+has servings, ingredients, instructions, and a clear purpose in life.
+
+We'd tell ragpiq to touch grass, but grass has a fibre value and we
+don't want to confuse them with something useful.
+
+In conclusion: the chicken has a schema, the salad has a schema, even
+the sweet potato has a schema. ragpiq is the only unstructured data in
+this entire project, and that includes the Excel files.
+
+  -- With love (barely). Now go open a pull request, ragpiq.
