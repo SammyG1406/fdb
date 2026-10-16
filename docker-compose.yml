@@ -171,7 +171,7 @@ services:
       - ./services/tracking_service/init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: unless-stopped
 
-  # ---------- Chicken Service + DB ----------
+  # ---------- Chicken Recipes Service + DB ----------
   chicken_service:
     build:
       context: .
@@ -194,7 +194,7 @@ services:
       POSTGRES_PASSWORD: chicken_pass
       POSTGRES_DB: chicken_db
     volumes:
-      - chicken_data:/var/lib/postgresql/data
+      - chicken_recipes_data:/var/lib/postgresql/data
       - ./services/chicken_service/init.sql:/docker-entrypoint-initdb.d/init.sql
     restart: unless-stopped
 
@@ -215,7 +215,7 @@ volumes:
   meal_data:
   tracking_data:
   food_data:
-  chicken_data:
+  chicken_recipes_data:
   prom-data: {}
   grafana-storage: {}
 

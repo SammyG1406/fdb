@@ -34,7 +34,7 @@ app.use("/tracked-meals", async (req, res) => {
   await proxyRequest(req, res, url);
 });
 
-// Chicken cuts
+// Chicken recipes
 app.use("/chicken", async (req, res) => {
   const url = `${CHICKEN_SERVICE_URL}${req.originalUrl}`;
   await proxyRequest(req, res, url);

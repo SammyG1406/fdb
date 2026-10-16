@@ -10,7 +10,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "Chicken cuts catalogue with per-100g nutrition",
+  "description": "Chicken recipes with ingredients and per-serving macros",
   "dependencies": {
     "express": "^5.2.1",
     "pg": "^8.20.0",

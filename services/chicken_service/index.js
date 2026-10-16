@@ -12,134 +12,201 @@ const pool = new Pool({
     connectionString: process.env.DATABASE_URL
 });
 
-const CUT_COLUMNS = `id, name, skin_on, calories_per_100g, protein_per_100g, carbs_per_100g, fats_per_100g, fiber_per_100g`;
+// Per-serving thresholds for the high_protein / low_fat filters
+const HIGH_PROTEIN_MIN_G = 30;
+const LOW_FAT_MAX_G = 10;
+
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const MACRO_FIELDS = ["calories_per_100g", "protein_per_100g", "carbs_per_100g", "fats_per_100g", "fiber_per_100g"];
+
+const withTags = (recipe) => ({
+    ...recipe,
+    high_protein: recipe.protein_per_serving >= HIGH_PROTEIN_MIN_G,
+    low_fat: recipe.fats_per_serving <= LOW_FAT_MAX_G,
+});
+
+async function getRecipe(id) {
+    const recipe = await pool.query(`SELECT * FROM recipe_nutrition WHERE id = $1`, [id]);
+    if (recipe.rows.length === 0) return null;
+
+    const ingredients = await pool.query(
+        `SELECT i.name, i.is_chicken, ri.grams::float8 AS grams
+         FROM recipe_ingredients ri
+         JOIN ingredients i ON i.id = ri.ingredient_id
+         WHERE ri.recipe_id = $1
+         ORDER BY i.is_chicken DESC, ri.grams DESC`,
+        [id]
+    );
+    return { ...withTags(recipe.rows[0]), ingredients: ingredients.rows };
+}
 
 app.get("/", (req, res) => {
     res.json({ service: "chicken_service running" });
 });
 
-// List all chicken cuts, optionally filtered by ?q=<search term>
-app.get("/chicken", async (req, res) => {
+// Search recipes: ?q=curry&high_protein=true&low_fat=true
+app.get("/chicken/recipes", async (req, res) => {
     try {
-        const { q } = req.query;
-        const result = q
-            ? await pool.query(
-                `SELECT ${CUT_COLUMNS} FROM chicken_cuts WHERE name ILIKE $1 ORDER BY name`,
-                [`%${q}%`]
-            )
-            : await pool.query(`SELECT ${CUT_COLUMNS} FROM chicken_cuts ORDER BY name`);
-        res.json(result.rows);
+        const { q, high_protein, low_fat } = req.query;
+        const conditions = [];
+        const params = [];
+
+        if (q) {
+            params.push(`%${q}%`);
+            conditions.push(`name ILIKE $${params.length}`);
+        }
+        if (high_protein === "true") {
+            params.push(HIGH_PROTEIN_MIN_G);
+            conditions.push(`protein_per_serving >= $${params.length}`);
+        }
+        if (low_fat === "true") {
+            params.push(LOW_FAT_MAX_G);
+            conditions.push(`fats_per_serving <= $${params.length}`);
+        }
+
+        const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+        const result = await pool.query(
+            `SELECT * FROM recipe_nutrition ${where} ORDER BY name`,
+            params
+        );
+        res.json(result.rows.map(withTags));
     } catch (error) {
-        console.error("Error fetching chicken cuts:", error);
-        res.status(500).json({ error: "Failed to fetch chicken cuts" });
+        console.error("Error fetching chicken recipes:", error);
+        res.status(500).json({ error: "Failed to fetch chicken recipes" });
     }
 });
 
-app.get("/chicken/:id", async (req, res) => {
+app.get("/chicken/recipes/:id", async (req, res) => {
     try {
         const { id } = req.params;
         if (!UUID_RE.test(id)) {
-            return res.status(404).json({ error: "Chicken cut not found" });
+            return res.status(404).json({ error: "Recipe not found" });
         }
-        const result = await pool.query(
-            `SELECT ${CUT_COLUMNS} FROM chicken_cuts WHERE id = $1`,
-            [id]
-        );
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: "Chicken cut not found" });
+        const recipe = await getRecipe(id);
+        if (!recipe) {
+            return res.status(404).json({ error: "Recipe not found" });
         }
-        res.json(result.rows[0]);
+        res.json(recipe);
     } catch (error) {
-        console.error("Error fetching chicken cut:", error);
-        res.status(500).json({ error: "Failed to fetch chicken cut" });
+        console.error("Error fetching chicken recipe:", error);
+        res.status(500).json({ error: "Failed to fetch chicken recipe" });
     }
 });
 
-// Macros scaled to a portion size, e.g. /chicken/:id/nutrition?grams=150
-app.get("/chicken/:id/nutrition", async (req, res) => {
-    try {
-        const { id } = req.params;
-        if (!UUID_RE.test(id)) {
-            return res.status(404).json({ error: "Chicken cut not found" });
-        }
-        const grams = Number(req.query.grams ?? 100);
-        if (!Number.isFinite(grams) || grams <= 0) {
-            return res.status(400).json({ error: "grams must be a positive number" });
-        }
+// Body: { name, description, instructions, servings, ingredients: [{ name, grams, is_chicken?, calories_per_100g?, ... }] }
+// Known ingredients are matched by name; new ones must include their per-100g macros.
+app.post("/chicken/recipes", async (req, res) => {
+    const { name, description = null, instructions = null, servings = 1, ingredients } = req.body;
 
-        const result = await pool.query(
-            `SELECT ${CUT_COLUMNS} FROM chicken_cuts WHERE id = $1`,
-            [id]
-        );
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: "Chicken cut not found" });
-        }
-
-        const cut = result.rows[0];
-        const scale = (per100g) => Math.round(Number(per100g) * grams) / 100;
-        res.json({
-            id: cut.id,
-            name: cut.name,
-            grams,
-            calories: scale(cut.calories_per_100g),
-            protein: scale(cut.protein_per_100g),
-            carbs: scale(cut.carbs_per_100g),
-            fats: scale(cut.fats_per_100g),
-            fiber: scale(cut.fiber_per_100g),
-        });
-    } catch (error) {
-        console.error("Error calculating chicken nutrition:", error);
-        res.status(500).json({ error: "Failed to calculate nutrition" });
+    if (!name) {
+        return res.status(400).json({ error: "name is required" });
     }
-});
+    if (!Number.isInteger(servings) || servings <= 0) {
+        return res.status(400).json({ error: "servings must be a positive integer" });
+    }
+    if (!Array.isArray(ingredients) || ingredients.length === 0) {
+        return res.status(400).json({ error: "ingredients must be a non-empty array" });
+    }
+    for (const ing of ingredients) {
+        if (!ing?.name || !(Number(ing.grams) > 0)) {
+            return res.status(400).json({ error: "each ingredient needs a name and positive grams" });
+        }
+    }
 
-app.post("/chicken", async (req, res) => {
+    const client = await pool.connect();
     try {
-        const {
-            name,
-            skin_on = false,
-            calories_per_100g = 0,
-            protein_per_100g = 0,
-            carbs_per_100g = 0,
-            fats_per_100g = 0,
-            fiber_per_100g = 0,
-        } = req.body;
+        await client.query("BEGIN");
 
-        if (!name) {
-            return res.status(400).json({ error: "name is required" });
+        const ingredientIds = [];
+        let hasChicken = false;
+        for (const ing of ingredients) {
+            let found = await client.query(
+                `SELECT id, is_chicken FROM ingredients WHERE name = $1`,
+                [ing.name]
+            );
+            if (found.rows.length === 0) {
+                if (ing.calories_per_100g === undefined) {
+                    await client.query("ROLLBACK");
+                    return res.status(400).json({
+                        error: `Unknown ingredient "${ing.name}"; include its per-100g macros to add it`,
+                    });
+                }
+                found = await client.query(
+                    `INSERT INTO ingredients (name, is_chicken, ${MACRO_FIELDS.join(", ")})
+                     VALUES ($1, $2, $3, $4, $5, $6, $7)
+                     RETURNING id, is_chicken`,
+                    [ing.name, Boolean(ing.is_chicken), ...MACRO_FIELDS.map((f) => ing[f] ?? 0)]
+                );
+            }
+            hasChicken ||= found.rows[0].is_chicken;
+            ingredientIds.push({ id: found.rows[0].id, grams: Number(ing.grams) });
         }
 
-        const result = await pool.query(
-            `INSERT INTO chicken_cuts (name, skin_on, calories_per_100g, protein_per_100g, carbs_per_100g, fats_per_100g, fiber_per_100g)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)
-             RETURNING ${CUT_COLUMNS}`,
-            [name, skin_on, calories_per_100g, protein_per_100g, carbs_per_100g, fats_per_100g, fiber_per_100g]
+        if (!hasChicken) {
+            await client.query("ROLLBACK");
+            return res.status(400).json({ error: "A chicken recipe needs at least one chicken ingredient" });
+        }
+
+        const recipe = await client.query(
+            `INSERT INTO recipes (name, description, instructions, servings)
+             VALUES ($1, $2, $3, $4)
+             RETURNING id`,
+            [name, description, instructions, servings]
         );
-        res.status(201).json(result.rows[0]);
+        const recipeId = recipe.rows[0].id;
+
+        for (const { id, grams } of ingredientIds) {
+            await client.query(
+                `INSERT INTO recipe_ingredients (recipe_id, ingredient_id, grams)
+                 VALUES ($1, $2, $3)
+                 ON CONFLICT (recipe_id, ingredient_id) DO UPDATE
+                 SET grams = recipe_ingredients.grams + EXCLUDED.grams`,
+                [recipeId, id, grams]
+            );
+        }
+
+        await client.query("COMMIT");
+        res.status(201).json(await getRecipe(recipeId));
     } catch (error) {
+        await client.query("ROLLBACK");
         if (error.code === "23505") {
-            return res.status(409).json({ error: "A chicken cut with that name already exists" });
+            return res.status(409).json({ error: "A recipe with that name already exists" });
         }
-        console.error("Error creating chicken cut:", error);
-        res.status(500).json({ error: "Failed to create chicken cut" });
+        console.error("Error creating chicken recipe:", error);
+        res.status(500).json({ error: "Failed to create chicken recipe" });
+    } finally {
+        client.release();
     }
 });
 
-app.delete("/chicken/:id", async (req, res) => {
+app.delete("/chicken/recipes/:id", async (req, res) => {
     try {
         const { id } = req.params;
         if (!UUID_RE.test(id)) {
-            return res.status(404).json({ error: "Chicken cut not found" });
+            return res.status(404).json({ error: "Recipe not found" });
         }
-        const result = await pool.query(`DELETE FROM chicken_cuts WHERE id = $1`, [id]);
+        const result = await pool.query(`DELETE FROM recipes WHERE id = $1`, [id]);
         if (result.rowCount === 0) {
-            return res.status(404).json({ error: "Chicken cut not found" });
+            return res.status(404).json({ error: "Recipe not found" });
         }
         res.json({ success: true });
     } catch (error) {
-        console.error("Error deleting chicken cut:", error);
-        res.status(500).json({ error: "Failed to delete chicken cut" });
+        console.error("Error deleting chicken recipe:", error);
+        res.status(500).json({ error: "Failed to delete chicken recipe" });
+    }
+});
+
+// Ingredients available to build recipes from
+app.get("/chicken/ingredients", async (req, res) => {
+    try {
+        const result = await pool.query(
+            `SELECT id, name, is_chicken, ${MACRO_FIELDS.map((f) => `${f}::float8 AS ${f}`).join(", ")}
+             FROM ingredients ORDER BY name`
+        );
+        res.json(result.rows);
+    } catch (error) {
+        console.error("Error fetching ingredients:", error);
+        res.status(500).json({ error: "Failed to fetch ingredients" });
     }
 });
 
